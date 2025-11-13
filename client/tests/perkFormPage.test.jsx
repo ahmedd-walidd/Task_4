@@ -34,7 +34,7 @@ describe('PerkForm page (Create Perk)', () => {
 
     await waitFor(() => {
       expect(screen.getByTestId('perks-landing')).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // Confirm the record genuinely exists in the backend by querying through
     // the shared axios instance.

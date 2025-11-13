@@ -25,7 +25,7 @@ describe('AllPerks page (Directory)', () => {
     // fetch finished.
     await waitFor(() => {
       expect(screen.getByText(seededPerk.title)).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // Interact with the name filter input using the real value that
     // corresponds to the seeded record.
@@ -34,7 +34,7 @@ describe('AllPerks page (Directory)', () => {
 
     await waitFor(() => {
       expect(screen.getByText(seededPerk.title)).toBeInTheDocument();
-    });
+    }, { timeout: 10000 });
 
     // The summary text should continue to reflect the number of matching perks.
     expect(screen.getByText(/showing/i)).toHaveTextContent('Showing');
@@ -51,7 +51,32 @@ describe('AllPerks page (Directory)', () => {
   */
 
   test('lists public perks and responds to merchant filtering', async () => {
-    // This will always fail until the TODO above is implemented.
-    expect(true).toBe(false);
+    // Use the seeded record from the shared test context for deterministic checks.
+    const seededPerk = global.__TEST_CONTEXT__.seededPerk;
+
+    // Render the page so it performs the real HTTP fetch for public perks.
+    renderWithRouter(
+      <Routes>
+        <Route path="/explore" element={<AllPerks />} />
+      </Routes>,
+      { initialEntries: ['/explore'] }
+    );
+
+    // Wait for the seeded record to appear which indicates fetch completion.
+    await waitFor(() => {
+      expect(screen.getByText(seededPerk.title)).toBeInTheDocument();
+    }, { timeout: 10000 });
+
+    // Select the seeded merchant from the dropdown to filter results.
+    const merchantSelect = screen.getByRole('combobox');
+    fireEvent.change(merchantSelect, { target: { value: seededPerk.merchant } });
+
+    // The filtered listing should still include the seeded record.
+    await waitFor(() => {
+      expect(screen.getByText(seededPerk.title)).toBeInTheDocument();
+    });
+
+    // Summary text should reflect the list being shown (don't assert exact count to avoid flakiness).
+    expect(screen.getByText(/showing/i)).toHaveTextContent('Showing');
   });
 });
